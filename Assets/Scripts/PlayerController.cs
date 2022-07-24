@@ -6,7 +6,8 @@ public class PlayerController : MonoBehaviour
 {
     Rigidbody rb;
     Animator animator;
-    [SerializeField] float speed = 0.1f;
+    [SerializeField] float speed = 10.0f;
+    private Vector3 latestPos;
     void Start()
     {
         rb = GetComponent<Rigidbody>();
@@ -20,7 +21,14 @@ public class PlayerController : MonoBehaviour
     {
         float x = Input.GetAxisRaw("Horizontal");
         float z = Input.GetAxisRaw("Vertical");
-        rb.velocity = new Vector3(x, 0, z).normalized*speed;
+        rb.velocity = new Vector3(x, 0, z);
+        Vector3 diff = transform.position - latestPos;   //前回からどこに進んだかをベクトルで取得
+        latestPos = transform.position;  //前回のPositionの更新
+        //ベクトルの大きさが0.01以上の時に向きを変える処理をする
+        if (diff.magnitude > 0.01f)
+        {
+            transform.rotation = Quaternion.LookRotation(diff); //向きを変更する
+        }
         if (Input.GetKeyDown(KeyCode.Escape))
         {
             Cursor.visible = true;
@@ -54,15 +62,20 @@ public class PlayerController : MonoBehaviour
             {
                 //walkをtrueに変更する処理
                 animator.SetBool("Run", true);
-                speed = 0.25f;
+                speed = 12.5f;
+                Debug.Log(speed);
             }
         }
         //trueのとき
         else if (animator.GetBool("Run"))
         {
             animator.SetBool("Run", false);
-            speed = 0.1f;
+            speed = 10.0f;
+            Debug.Log(speed);
         }
 
+    }
+    private void FixedUpdate()
+    {
     }
 }
