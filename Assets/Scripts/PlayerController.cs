@@ -7,6 +7,7 @@ public class PlayerController : MonoBehaviour
     Rigidbody rb;
     Animator animator;
     Quaternion targetRot;
+    public Collider[] Hitcollider;
     enum Action
     {
         MOVE,
@@ -63,6 +64,21 @@ public class PlayerController : MonoBehaviour
         if(Input.GetMouseButtonDown(0))
         {
             animator.SetTrigger("Attack");
+        }
+    }
+    public void HideColliderWeapon()
+    {
+        for (int i = 0; i < Hitcollider.Length; i++)
+        {
+            Hitcollider[i].enabled = false;
+        }
+    }
+
+    public void ShowColliderWeapon()
+    {
+        for (int r = 0; r < Hitcollider.Length; r++)
+        {
+            Hitcollider[r].enabled = true;
         }
     }
 }
