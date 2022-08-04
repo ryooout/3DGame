@@ -1,13 +1,19 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-
+using UnityEngine.UI;
 public class PlayerController : MonoBehaviour
 {
     Rigidbody rb;
     Animator animator;
     Quaternion targetRot;
     public Collider[] Hitcollider;
+    /// <summary>‘Ì—Í</summary>
+    int playerHp = 100;
+    /// <summary>Max‚Ì‘Ì—Í</summary>
+    int maxPlayerHp = 100;
+    /// <summary>hpƒo[ </summary>
+    Slider hpBer;
     enum Action
     {
         MOVE,
@@ -79,6 +85,19 @@ public class PlayerController : MonoBehaviour
         for (int r = 0; r < Hitcollider.Length; r++)
         {
             Hitcollider[r].enabled = true;
+        }
+    }
+    /// <summary>Hp‚ğŒ¸‚ç‚·ŠÖ” </summary>
+    /// <param name="damage"></param>
+    public void TakeHit(float damage)
+    {
+        playerHp = (int)Mathf.Clamp(playerHp - damage, 0, playerHp);
+
+        hpBer.value = playerHp;
+
+        if (playerHp <= 0 && !GameState.gameOver)
+        {
+            GameState.gameOver = true;
         }
     }
 }
