@@ -13,7 +13,7 @@ public class PlayerController : MonoBehaviour
     /// <summary>Max‚Ì‘Ì—Í</summary>
     int maxPlayerHp = 100;
     /// <summary>hpƒo[ </summary>
-    Slider hpBer;
+    public Slider hpBer;
     enum Action
     {
         MOVE,
@@ -91,7 +91,7 @@ public class PlayerController : MonoBehaviour
     /// <param name="damage"></param>
     public void TakeHit(float damage)
     {
-        playerHp = (int)Mathf.Clamp(playerHp - damage, 0, playerHp);
+        playerHp = (int)Mathf.Clamp(playerHp - damage, 0, maxPlayerHp);
 
         hpBer.value = playerHp;
 
