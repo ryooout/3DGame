@@ -2,6 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
+using UnityEngine.EventSystems;
 public class PlayerController : MonoBehaviour
 {
     Rigidbody rb;
@@ -9,11 +10,14 @@ public class PlayerController : MonoBehaviour
     Quaternion targetRot;
     public Collider[] Hitcollider;
     /// <summary>体力</summary>
-    int playerHp = 100;
+    public int playerHp = 100;
     /// <summary>Maxの体力</summary>
     int maxPlayerHp = 100;
     /// <summary>hpバー </summary>
     public Slider hpBer;
+    float currentTime = 0;
+    public static bool heal_flag = false;
+    [SerializeField] Button healButton = default;
     enum Action
     {
         MOVE,
@@ -47,6 +51,10 @@ public class PlayerController : MonoBehaviour
             Cursor.visible = false;
             Cursor.lockState = CursorLockMode.Locked;
         }
+        if (UiContoroller.enemyCount == 0)
+        {
+            rb.isKinematic = true;
+        }
     }
     private void FixedUpdate()
     {
@@ -67,9 +75,22 @@ public class PlayerController : MonoBehaviour
         }                                //回転をなめらかに
         transform.rotation = Quaternion.RotateTowards(transform.rotation, targetRot, rotationSpeed);
         animator.SetFloat("Speed", velocity.magnitude * speed, 0.1f, Time.deltaTime);
-        if(Input.GetMouseButtonDown(0))
+        if (Input.GetMouseButtonDown(0))
         {
             animator.SetTrigger("Attack");
+        }
+        //前のフレームから経過した秒数を加算
+        currentTime += Time.deltaTime;
+
+        //毎秒処理を行う
+        if (currentTime >= 1.0f)
+        {
+            //フラグがtrueの時だけ処理する
+            if (heal_flag == true)
+            {
+                hpBer.value += 10;
+            }
+            currentTime = 0;
         }
     }
     public void HideColliderWeapon()
@@ -98,6 +119,24 @@ public class PlayerController : MonoBehaviour
         if (playerHp <= 0 && !GameState.gameOver)
         {
             GameState.gameOver = true;
+        }
+    }
+    private void OnCollisionEnter(Collision collision)
+    {
+        if (collision.gameObject.tag == "Heal")
+        {
+            healButton.gameObject.SetActive(true);
+        }
+    }
+    private void OnCollisionExit(Collision collision)
+    {
+        healButton.gameObject.SetActive(false);
+    }
+    void OnMouseDown()
+    {
+        if (EventSystem.current.IsPointerOverGameObject())
+        {
+            return;
         }
     }
 }
