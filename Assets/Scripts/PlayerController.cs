@@ -2,7 +2,6 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
-using UnityEngine.EventSystems;
 public class PlayerController : MonoBehaviour
 {
     Rigidbody rb;
@@ -18,6 +17,7 @@ public class PlayerController : MonoBehaviour
     float currentTime = 0;
     public static bool heal_flag = false;
     [SerializeField] Button healButton = default;
+    [SerializeField] GameObject[]healObj;
     enum Action
     {
         MOVE,
@@ -55,6 +55,33 @@ public class PlayerController : MonoBehaviour
         {
             rb.isKinematic = true;
         }
+        foreach (GameObject t in healObj)
+        {
+            float distance = Vector3.Distance(transform.position, t.transform.position);
+            if (distance <= 1.5)
+            {
+                heal_flag = true;
+                healButton.gameObject.SetActive(true);
+            }
+            else
+            {
+                heal_flag = false;
+                healButton.gameObject.SetActive(false);
+            }
+        }
+        //前のフレームから経過した秒数を加算
+        currentTime += Time.deltaTime;
+
+        //毎秒処理を行う
+        if (currentTime >= 1.0f)
+        {
+            //フラグがtrueの時だけ処理する
+            if (heal_flag)
+            {
+                hpBer.value += 3;
+            }
+            currentTime = 0;
+        }
     }
     private void FixedUpdate()
     {
@@ -78,20 +105,7 @@ public class PlayerController : MonoBehaviour
         if (Input.GetMouseButtonDown(0))
         {
             animator.SetTrigger("Attack");
-        }
-        //前のフレームから経過した秒数を加算
-        currentTime += Time.deltaTime;
-
-        //毎秒処理を行う
-        if (currentTime >= 1.0f)
-        {
-            //フラグがtrueの時だけ処理する
-            if (heal_flag == true)
-            {
-                hpBer.value += 10;
-            }
-            currentTime = 0;
-        }
+        } 
     }
     public void HideColliderWeapon()
     {
@@ -121,7 +135,7 @@ public class PlayerController : MonoBehaviour
             GameState.gameOver = true;
         }
     }
-    private void OnCollisionEnter(Collision collision)
+    /*private void OnCollisionEnter(Collision collision)
     {
         if (collision.gameObject.tag == "Heal")
         {
@@ -131,12 +145,19 @@ public class PlayerController : MonoBehaviour
     private void OnCollisionExit(Collision collision)
     {
         healButton.gameObject.SetActive(false);
-    }
-    void OnMouseDown()
+        heal_flag = false;
+    }*/
+    /*private void OnTriggerEnter(Collider other)
     {
-        if (EventSystem.current.IsPointerOverGameObject())
+        if (other.gameObject.tag == "Heal")
         {
-            return;
+            heal_flag = true;
+            healButton.gameObject.SetActive(true);
         }
     }
+    private void OnTriggerExit(Collider other)
+    {
+        healButton.gameObject.SetActive(false);
+        heal_flag = false;
+    }*/
 }
