@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.EventSystems;
 using UnityEngine.UI;
 public class PlayerController : MonoBehaviour
 {
@@ -33,7 +34,6 @@ public class PlayerController : MonoBehaviour
     {
         TryGetComponent(out animator);
         TryGetComponent(out rb);
-        Cursor.visible = false;
         Cursor.lockState = CursorLockMode.None;
     }
 
@@ -41,7 +41,7 @@ public class PlayerController : MonoBehaviour
     void Update()
     {
         Move();
-        if (Input.GetKeyDown(KeyCode.Escape))
+        if (Input.GetKeyDown(KeyCode.Tab))
         {
             Cursor.visible = true;
             Cursor.lockState = CursorLockMode.None;
@@ -104,6 +104,11 @@ public class PlayerController : MonoBehaviour
         animator.SetFloat("Speed", velocity.magnitude * speed, 0.1f, Time.deltaTime);
         if (Input.GetMouseButtonDown(0))
         {
+            if (EventSystem.current.IsPointerOverGameObject())
+            {
+                // nGUI上をクリックしているので処理をキャンセルする。
+                return;
+            }
             animator.SetTrigger("Attack");
         } 
     }
