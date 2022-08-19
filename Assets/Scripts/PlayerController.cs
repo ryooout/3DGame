@@ -18,7 +18,7 @@ public class PlayerController : MonoBehaviour
     float currentTime = 0;
     public static bool heal_flag = false;
     [SerializeField] Button healButton = default;
-    [SerializeField] GameObject[]healObj;
+    [SerializeField] GameObject healObj;
     enum Action
     {
         MOVE,
@@ -55,9 +55,7 @@ public class PlayerController : MonoBehaviour
         {
             rb.isKinematic = true;
         }
-        foreach (GameObject t in healObj)
-        {
-            float distance = Vector3.Distance(transform.position, t.transform.position);
+            float distance = Vector3.Distance(transform.position, healObj.transform.position);
             if (distance <= 1.5)
             {
                 heal_flag = true;
@@ -68,7 +66,6 @@ public class PlayerController : MonoBehaviour
                 heal_flag = false;
                 healButton.gameObject.SetActive(false);
             }
-        }
         //‘O‚ÌƒtƒŒ[ƒ€‚©‚çŒo‰ß‚µ‚½•b”‚ð‰ÁŽZ
         currentTime += Time.deltaTime;
 
