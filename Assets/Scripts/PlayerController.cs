@@ -19,21 +19,16 @@ public class PlayerController : MonoBehaviour
     public static bool heal_flag = false;
     [SerializeField] Button healButton = default;
     [SerializeField] GameObject healObj;
-    enum Action
-    {
-        MOVE,
-        ATTACK,
-        DAMAGED
-    }
-    Action action = Action.MOVE;
+    float jumpForce = 200f;
+    bool isGround = true;
     private void Awake()
     {
         targetRot = transform.rotation;
     }
     void Start()
     {
-        TryGetComponent(out animator);
-        TryGetComponent(out rb);
+        animator = GetComponent<Animator>();
+        rb = GetComponent<Rigidbody>();
         Cursor.lockState = CursorLockMode.None;
     }
 
@@ -51,6 +46,15 @@ public class PlayerController : MonoBehaviour
             Cursor.visible = false;
             Cursor.lockState = CursorLockMode.Locked;
         }
+        /*if (animator.GetBool("IsGround"))
+        {
+            if (Input.GetKeyDown("space"))
+            {
+                animator.SetTrigger("Jump");
+                animator.SetBool("IsGround", false);
+                rb.AddForce(transform.up * jumpForce, ForceMode.Impulse);
+            }
+        }*/
         if (UiContoroller.enemyCount == 0)
         {
             rb.isKinematic = true;
@@ -137,29 +141,4 @@ public class PlayerController : MonoBehaviour
             GameState.gameOver = true;
         }
     }
-    /*private void OnCollisionEnter(Collision collision)
-    {
-        if (collision.gameObject.tag == "Heal")
-        {
-            healButton.gameObject.SetActive(true);
-        }
-    }
-    private void OnCollisionExit(Collision collision)
-    {
-        healButton.gameObject.SetActive(false);
-        heal_flag = false;
-    }*/
-    /*private void OnTriggerEnter(Collider other)
-    {
-        if (other.gameObject.tag == "Heal")
-        {
-            heal_flag = true;
-            healButton.gameObject.SetActive(true);
-        }
-    }
-    private void OnTriggerExit(Collider other)
-    {
-        healButton.gameObject.SetActive(false);
-        heal_flag = false;
-    }*/
 }
