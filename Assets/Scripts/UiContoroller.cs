@@ -5,15 +5,23 @@ using UnityEngine.UI;
 using UnityEngine.EventSystems;
 public class UiContoroller : MonoBehaviour
 {
+    public static UiContoroller uiContoroller;
     public static int enemyCount = 1;
     [SerializeField] Text enemyCountText = default;
     [SerializeField] Text clearText = default;
-    [SerializeField] GameObject inventry = default;
+    [SerializeField] GameObject menu = default;
+    [SerializeField] GameObject item = default;
     [SerializeField] Button closeButton = default;
+    public Text itemGet = default;
     void Start()
     {
-        inventry.SetActive(false);
+        if(uiContoroller ==null)
+        {
+            uiContoroller = this;
+        }
+        menu.SetActive(false);
         closeButton.gameObject.SetActive(false);
+        item.SetActive(false);
     }
 
     // Update is called once per frame
@@ -26,8 +34,7 @@ public class UiContoroller : MonoBehaviour
         }
         if(Input.GetKeyDown(KeyCode.Escape))
         {
-            inventry.SetActive(true);
-            closeButton.gameObject.SetActive(true);
+            menu.SetActive(true);
         }
     }
     public void HealButton()
@@ -37,6 +44,21 @@ public class UiContoroller : MonoBehaviour
     public void IsClosed()
     {
         closeButton.gameObject.SetActive(false);
-        inventry.SetActive(false);
+        item.SetActive(false);
+        menu.SetActive(true);
+    }
+    public void MenuClosed()
+    {
+        menu.SetActive(false);
+    }
+    public void ItemOpen()
+    {
+        closeButton.gameObject.SetActive(true);
+        item.SetActive(true);
+        menu.SetActive(false);
+    }
+    public void Sound()
+    {
+
     }
 }
