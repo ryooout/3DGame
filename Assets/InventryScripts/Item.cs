@@ -4,7 +4,7 @@ using UnityEngine.UI;
 [CreateAssetMenu(fileName ="New Item",menuName = "ScriptableObject/Create Item")]
 public class Item : ScriptableObject
 {
-    public Item.ItemId Id = default;
+    public ItemId Id = default;
     public static Item itemInstance;
     new public string name = "New Item";
     public Sprite itemIcon = null;
