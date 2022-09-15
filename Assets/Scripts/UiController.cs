@@ -9,11 +9,21 @@ public class UiController : MonoBehaviour
     public  int enemyCount = 1;
     [SerializeField] Text enemyCountText = default;
     [SerializeField] Text clearText = default;
+    /// <summary>所持アイテムテキスト</summary>
+    [SerializeField] Text havingInventry = default;
+    /// <summary>メニュー画面</summary>
     [SerializeField] GameObject menu = default;
+    /// <summary>アイテムインベントリ画面 </summary>
     [SerializeField] GameObject item = default;
+    /// <summary>インベントリ画面を閉じる</summary>
     [SerializeField] Button closeButton = default;
+    /// <summary>音量設定</summary>
     [SerializeField] GameObject audioVolumeMenu = default;
+    /// <summary>ショップ画面</summary>
+    [SerializeField] GameObject shop = default;
+    [SerializeField] Button shopClose = default;
     public Text itemGet = default;
+    [SerializeField] Text exPlain = default;
     void Start()
     {
         if(uiController ==null)
@@ -24,6 +34,7 @@ public class UiController : MonoBehaviour
         closeButton.gameObject.SetActive(false);
         item.SetActive(false);
         audioVolumeMenu.SetActive(false);
+        havingInventry.gameObject.SetActive(false);
     }
 
     // Update is called once per frame
@@ -39,25 +50,34 @@ public class UiController : MonoBehaviour
             menu.SetActive(true);
         }
     }
-    public void HealButton()
-    {
-        PlayerController.heal_flag = true;     
-    }
-    public void IsClosed()
-    {
-        closeButton.gameObject.SetActive(false);
-        item.SetActive(false);
-        menu.SetActive(true);
-    }
-    public void MenuClosed()
-    {
-        menu.SetActive(false);
-    }
     public void ItemOpen()
     {
         closeButton.gameObject.SetActive(true);
         item.SetActive(true);
+        havingInventry.gameObject.SetActive(true);
         menu.SetActive(false);
+    }
+    public void ItemClosed()
+    {
+        closeButton.gameObject.SetActive(false);
+        item.SetActive(false);
+        menu.SetActive(true);
+        havingInventry.gameObject.SetActive(false);
+    }
+    public void MenuClosed()
+    {
+        menu.SetActive(false);
+        Cursor.lockState = CursorLockMode.Locked;
+    }
+    public void ShopOpen()
+    {
+        shop.gameObject.SetActive(true);
+        menu.gameObject.SetActive(false);
+    }
+    public void ShopClose()
+    {
+        shop.gameObject.SetActive(false);
+        menu.gameObject.SetActive(true);
     }
     public void SoundSetting()
     {
@@ -68,5 +88,13 @@ public class UiController : MonoBehaviour
     {
         audioVolumeMenu.SetActive(false);
         menu.SetActive(true);
+    }
+    public void MouseEnter()
+    {
+        exPlain.gameObject.SetActive(true);
+    }
+    public void MouseExit()
+    {
+        exPlain.gameObject.SetActive(false);
     }
 }
