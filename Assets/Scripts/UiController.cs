@@ -3,37 +3,25 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 using UnityEngine.EventSystems;
+using DG.Tweening;
 public class UiController : MonoBehaviour
 {
-    public static UiController uiController;
-    public  int enemyCount = 1;
-    [SerializeField] Text enemyCountText = default;
-    [SerializeField] Text clearText = default;
     /// <summary>所持アイテムテキスト</summary>
     [SerializeField] Text havingInventry = default;
     /// <summary>メニュー画面</summary>
     [SerializeField] GameObject menu = default;
-    /// <summary>アイテムインベントリ画面 </summary>
-    [SerializeField] GameObject item = default;
     /// <summary>インベントリ画面を閉じる</summary>
     [SerializeField] Button closeButton = default;
     /// <summary>音量設定</summary>
     [SerializeField] GameObject audioVolumeMenu = default;
-    /// <summary>ショップ画面</summary>
-    [SerializeField] GameObject shop = default;
-    [SerializeField] Button shopClose = default;
     public Text itemGet = default;
+    /// <summary>説明テキスト</summary>
     [SerializeField] Text exPlain = default;
+    /// <summary>Uiを格納する配列</summary>
+    [SerializeField] Transform[]uiMove;
     void Start()
     {
-        if(uiController ==null)
-        {
-            uiController = this;
-        }
-        menu.SetActive(false);
         closeButton.gameObject.SetActive(false);
-        item.SetActive(false);
-        audioVolumeMenu.SetActive(false);
         havingInventry.gameObject.SetActive(false);
     }
 
@@ -47,47 +35,62 @@ public class UiController : MonoBehaviour
         }*/
         if(Input.GetKeyDown(KeyCode.Escape))
         {
-            menu.SetActive(true);
+            //メニュー画面の動き
+            uiMove[3].transform.DOMoveY(200, 0.5f);
         }
     }
+    /// <summary>アイテムメニュー開く</summary>
     public void ItemOpen()
     {
-        closeButton.gameObject.SetActive(true);
-        item.SetActive(true);
-        havingInventry.gameObject.SetActive(true);
         menu.SetActive(false);
+        closeButton.gameObject.SetActive(true);
+        havingInventry.gameObject.SetActive(true);
+        //アイテムインベントリの動き
+        uiMove[2].transform.DOLocalMoveY(250, 0.5f);
     }
+    /// <summary>アイテムメニュー閉じる</summary>
     public void ItemClosed()
     {
-        closeButton.gameObject.SetActive(false);
-        item.SetActive(false);
         menu.SetActive(true);
+        closeButton.gameObject.SetActive(false);
         havingInventry.gameObject.SetActive(false);
+        //アイテムインベントリの動き
+        uiMove[2].transform.DOLocalMoveY(550,0.5f);
     }
+    /// <summary>メニュー画面閉じる</summary>
     public void MenuClosed()
     {
-        menu.SetActive(false);
         Cursor.lockState = CursorLockMode.Locked;
+        //メニュー画面の動き
+        uiMove[3].transform.DOMoveY(600, 0.5f);
     }
+    /// <summary>ショップ画面開く</summary>
     public void ShopOpen()
     {
-        shop.gameObject.SetActive(true);
-        menu.gameObject.SetActive(false);
+        menu.SetActive(false);
+        //ショップメニューの動き
+        uiMove[0].transform.DOLocalMove(new Vector3(-9, -15, 60), 0.5f);
     }
+    /// <summary>ショップ画面閉じる</summary>
     public void ShopClose()
     {
-        shop.gameObject.SetActive(false);
-        menu.gameObject.SetActive(true);
+        menu.SetActive(true);
+        //ショップメニューの動き
+        uiMove[0].transform.DOLocalMoveX(-758, 0.5f);
     }
+    /// <summary>サウンドメニュー開く</summary>
     public void SoundSetting()
     {
-        audioVolumeMenu.SetActive(true);
         menu.SetActive(false);
+        //サウンドメニューの動き
+        uiMove[1].transform.DOLocalMoveX(0, 0.5f);
     }
+    /// <summary>サウンドメニュー閉じる</summary>
     public void SoundClose()
     {
-        audioVolumeMenu.SetActive(false);
         menu.SetActive(true);
+        //サウンドメニューの動き
+        uiMove[1].transform.DOLocalMoveX(-730, 0.5f);
     }
     public void MouseEnter()
     {
