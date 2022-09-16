@@ -16,10 +16,10 @@ public class PlayerUiCanvas : MonoBehaviour
     /// <param name="playerController"></param>
     public void Init(PlayerController playerController)
     {
-        hpSlider.maxValue = playerController.playerMaxHp;
-        hpSlider.value = playerController.playerMaxHp;
-        staminaSlider.maxValue = playerController.maxStamina;
-        staminaSlider.value = playerController.maxStamina;
+        hpSlider.maxValue = playerController.MaxHp;
+        hpSlider.value = playerController.MaxHp;
+        staminaSlider.maxValue = playerController.MaxStamina;
+        staminaSlider.value = playerController.MaxStamina;
     }
     /// <summary>DoTweenÇópÇ¢ÇΩHpÇÃå∏è≠</summary>
     public void UpdateHp(float hp)
