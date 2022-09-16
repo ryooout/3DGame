@@ -85,10 +85,6 @@ public class PlayerController : MonoBehaviour
             Cursor.visible = true;
             Cursor.lockState = CursorLockMode.None;
         }
-        if (UiController.uiController.enemyCount == 0)
-        {
-            rb.isKinematic = true;
-        }
             float distance = Vector3.Distance(transform.position, healObj.transform.position);
             if (distance <= 1.5)
             {
@@ -104,17 +100,35 @@ public class PlayerController : MonoBehaviour
         //毎秒処理を行う
         if (currentTime >= 1.0f)
         {
-            //フラグがtrueの時だけ処理する
-            if (heal_flag)
-            {
-                playerUiCanvas.hpSlider.value += 3;
-            }
+            Heal();
             currentTime = 0;
+        }
+        if (Input.GetMouseButtonDown(0))
+        {
+            Attack();
+        }
+        if (Input.GetMouseButton(1))
+        {
+            GuardNow();
+            Debug.Log("Down");
+        }
+        else if (Input.GetMouseButtonUp(1))
+        {
+            NoGuard();
+            Debug.Log("Up");
         }
     }
     private void FixedUpdate()
     {
         Move();
+    }
+    void Heal()
+    {
+        //フラグがtrueの時だけ処理する
+        if (heal_flag)
+        {
+            playerUiCanvas.hpSlider.value += 3;
+        }
     }
     private void Move()
     {
@@ -130,24 +144,25 @@ public class PlayerController : MonoBehaviour
         vel.Normalize();
         rb.velocity = vel*_playerSpeed;      
         var speed = Input.GetKey(KeyCode.LeftShift) ? 2 : 1;
-        if (Input.GetKey(KeyCode.LeftShift))
+        if (speed == 2)
         {
             _stamina-=0.5f;
-            _playerSpeed = 4;
+            _playerSpeed = 4;            
+            if(_stamina<=20)
+            {
+                speed = 1;
+                _playerSpeed = 2;
+            }
             playerUiCanvas.UpdateStamina(_stamina);
-        }
-        if (_stamina <= 20)
-        {
-            _playerSpeed = 2;
-            speed = 1;
-        }
-        if(speed<=0)
-        {
-            IncreseStamina(2.5f);
         }
         else if(speed == 1)
         {
+            _playerSpeed = 2;
             IncreseStamina(1);
+        }
+        else if(speed <= 0)
+        {
+            IncreseStamina(2.5f);
         }
         var rotationSpeed = 600 * Time.deltaTime;
         //移動方向を向く
@@ -157,14 +172,6 @@ public class PlayerController : MonoBehaviour
         }                                //回転をなめらかに
         transform.rotation = Quaternion.RotateTowards(transform.rotation, targetRot, rotationSpeed);
         animator.SetFloat("Speed", vel.magnitude * speed, 0.1f, Time.deltaTime);
-        if (Input.GetMouseButtonDown(0))
-        {
-            Attack();
-        }
-        if(Input.GetMouseButtonDown(1))
-        {
-            Guard();
-        }
     }
     void IncreseStamina(float increse)
     {
@@ -186,11 +193,10 @@ public class PlayerController : MonoBehaviour
         animator.SetTrigger("Attack");
         _playerSpeed = 0;
     }
-    void Guard()
-    {
-        animator.SetBool("Defence", true);
-        animator.SetTrigger("Attack");
-    }
+        void GuardNow()
+        { animator.SetBool("Guard", true); }
+        void NoGuard()
+        { animator.SetBool("Guard", false); }
     public void HideColliderWeapon()
     {
         for (int i = 0; i < Hitcollider.Length; i++)
