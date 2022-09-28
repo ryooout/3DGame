@@ -1,91 +1,119 @@
 using System.Collections;
 using System.Collections.Generic;
+using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
-public class PlayerController : MonoBehaviour
+public class PlayerController :HumanManager,IDamageInterFace
 {
+    [SerializeField] private AudioManager audioManager; 
     [SerializeField] private PlayerUiCanvas playerUiCanvas;
+    [SerializeField] private Damager textSenyouDamager;
     Rigidbody rb;
-    private Animator animator;
     /// <summary>回転</summary>
     Quaternion targetRot;
-    /// <summary>当たり判定</summary>
-    public Collider[] Hitcollider;
     /// <summary>経過時間</summary>
     float currentTime = 0;
     private bool heal_flag = false;
-    /// <summary>死んでいるのか</summary>
-    bool isDie = false;
-    [SerializeField] GameObject healObj;
+    [SerializeField,Header("回復オブジェクト")] GameObject healObj;
+    [SerializeField, Header("ザコ敵")] GameObject zakotekiCollider;
     /// <summary>ベクトル</summary>
     Vector3 vel;
-    /// <summary>体力</summary>
-    [SerializeField]private float _playerHp = 100;
-    /// <summary>Maxの体力</summary>
-    [SerializeField] private float _playerMaxHp = 100;
     /// <summary>Maxのスタミナ</summary>
-    [SerializeField] private float _maxStamina = 100;
+    [SerializeField,Header("Maxのスタミナ")] protected float _maxStamina = 100;
     /// <summary>スタミナ</summary>
-    [SerializeField] private float _stamina = 100;
+    [SerializeField,Header("スタミナ")] protected float _stamina = 100;
     /// <summary>プレイヤーのスピード</summary>
-    [SerializeField] private float _playerSpeed = 5;
-    public float Hp
-    { 
-        get { return _playerHp;}
-        set { _playerHp = value;}
-    }  
-    public float MaxHp
-    {
-        get { return _playerMaxHp; }
-        set { _playerMaxHp = value; }
-    }
-    
-    public float Stamina
-    {
-        get { return _stamina; }
-        set { _stamina = value; }
-    }
-    
-    public float MaxStamina
-    {
-        get { return _maxStamina; }
-        set { _maxStamina = value; }
-    }
+    [SerializeField,Header("プレーヤーのスピード")] private float _playerSpeed = 5;
+    /// <summary>所持金 </summary>
+    [SerializeField,Header("所持金")] private int money = 0;
+    /// <summary>アニメーションのブレンドツリーで切り替える際のスピード</summary>
+    int speed;
+    public int Speed => speed;
+    PauseManager _pauseManager;
+    Inventry inventry;
+    bool _isStop;
+    public float Stamina => _stamina;
+
+    public float MaxStamina => _maxStamina;
     public float PlayerSpeed
     {
         get { return _playerSpeed; }
         set { _playerSpeed = value; }
     }
-    public Animator Animator
+    public int Money
     {
-        get { return animator; }
-        set { animator = value; }
+        get { return money; }
+        set { money = value; }
     }
     private void Awake()
     {
         targetRot = transform.rotation;
+        Cursor.lockState = CursorLockMode.Locked;
+        _pauseManager = GameObject.FindObjectOfType<PauseManager>();
+    }
+    void OnEnable()
+    {
+        // 呼んで欲しいメソッドを登録する。
+        _pauseManager.OnPauseResume += PauseResume;
+    }
+
+    void OnDisable()
+    {
+        // OnDisable ではメソッドの登録を解除すること。さもないとオブジェクトが無効にされたり破棄されたりした後にエラーになってしまう。
+        _pauseManager.OnPauseResume -= PauseResume;
+    }
+
+    void PauseResume(bool isPause)
+    {
+        if (isPause)
+        {
+            Pause();
+        }
+        else
+        {
+            Resume();
+        }
+    }
+    /// <summary>停止</summary>
+    public void Pause()
+    {
+        _isStop = true;
+        Cursor.lockState = CursorLockMode.None;
+        // カーソル表示
+        Cursor.visible = true;
+    }
+    /// <summary>再生</summary>
+    public void Resume()
+    {
+        _isStop = false;
+        Cursor.lockState = CursorLockMode.Locked;
+        // カーソル非表示
+        Cursor.visible = false;
     }
     void Start()
     {
-        _playerHp = _playerMaxHp;
-        animator = GetComponent<Animator>();
+       // Hp = MaxHp;
+        _isStop = false;
+        _animator = GetComponent<Animator>();
         rb = GetComponent<Rigidbody>();
         playerUiCanvas.Init(this);
         HideColliderWeapon();
-        Cursor.lockState = CursorLockMode.Locked;
+       // saveManager = GetComponent<SaveManager>();
     }
 
     // Update is called once per frame
     void Update()
     {
-        
-        if (Input.GetKeyDown(KeyCode.Escape))
+        if (EventSystem.current.IsPointerOverGameObject())
         {
-            Cursor.visible = true;
-            Cursor.lockState = CursorLockMode.None;
+            // nGUI上をクリックしているので処理をキャンセルする。
+            return;
         }
-            float distance = Vector3.Distance(transform.position, healObj.transform.position);
+        if(_isStop&&(Input.GetButtonDown("Cancel")))
+        { Cursor.lockState = CursorLockMode.None; }
+        
+        float distance = Vector3.Distance(transform.position, healObj.transform.position);
             if (distance <= 1.5)
             {
                 heal_flag = true;
@@ -103,16 +131,16 @@ public class PlayerController : MonoBehaviour
             Heal();
             currentTime = 0;
         }
-        if (Input.GetMouseButtonDown(0))
+        if (Input.GetMouseButtonDown(0)&&!_isStop)
         {
-            Attack();
+            Attack(); 
         }
-        if (Input.GetMouseButton(1))
+        if (Input.GetMouseButton(1) && !_isStop)
         {
             GuardNow();
             Debug.Log("Down");
         }
-        else if (Input.GetMouseButtonUp(1))
+        else if (Input.GetMouseButtonUp(1) && !_isStop)
         {
             NoGuard();
             Debug.Log("Up");
@@ -120,7 +148,14 @@ public class PlayerController : MonoBehaviour
     }
     private void FixedUpdate()
     {
-        Move();
+        if (EventSystem.current.IsPointerOverGameObject())
+        {
+            // nGUI上をクリックしているので処理をキャンセルする。
+            return;
+        }
+        if(!_isStop)
+        { Move(); }
+        
     }
     void Heal()
     {
@@ -132,7 +167,7 @@ public class PlayerController : MonoBehaviour
     }
     private void Move()
     {
-        if (animator.GetCurrentAnimatorStateInfo(0).IsName("Attack"))
+        if (_animator.GetCurrentAnimatorStateInfo(0).IsName("Attack"))
         {
             return;
         }
@@ -143,7 +178,7 @@ public class PlayerController : MonoBehaviour
         vel = horizontalRotation * new Vector3(x, 0, z);
         vel.Normalize();
         rb.velocity = vel*_playerSpeed;      
-        var speed = Input.GetKey(KeyCode.LeftShift) ? 2 : 1;
+        speed = Input.GetKey(KeyCode.LeftShift) ? 2 : 1;
         if (speed == 2)
         {
             _stamina-=0.5f;
@@ -171,11 +206,10 @@ public class PlayerController : MonoBehaviour
             targetRot = Quaternion.LookRotation(vel, Vector3.up);
         }                                //回転をなめらかに
         transform.rotation = Quaternion.RotateTowards(transform.rotation, targetRot, rotationSpeed);
-        animator.SetFloat("Speed", vel.magnitude * speed, 0.1f, Time.deltaTime);
+        _animator.SetFloat("Speed", vel.magnitude * speed, 0.1f, Time.deltaTime);
     }
     void IncreseStamina(float increse)
-    {
-            //スタミナの自動回復
+    {        //スタミナの自動回復
             _stamina+= increse ;
         if (_stamina >= _maxStamina)
         {
@@ -190,59 +224,36 @@ public class PlayerController : MonoBehaviour
             // nGUI上をクリックしているので処理をキャンセルする。
             return;
         }
-        animator.SetTrigger("Attack");
+        _animator.SetTrigger("Attack");
         _playerSpeed = 0;
     }
-        void GuardNow()
-        { animator.SetBool("Guard", true); }
-        void NoGuard()
-        { animator.SetBool("Guard", false); }
-    public void HideColliderWeapon()
-    {
-        for (int i = 0; i < Hitcollider.Length; i++)
-        {
-            Hitcollider[i].enabled = false;
-        }
-    }
-
-    public void ShowColliderWeapon()
-    {
-        for (int r = 0; r < Hitcollider.Length; r++)
-        {
-            Hitcollider[r].enabled = true;
-        }
-    }
-    /// <summary>ダメージ </summary>
+    /// <summary>あるアニメーションのタイミングでSE再生</summary>
+   public void SEplay() {audioManager.PlaySound(0);}
+   void GuardNow()  { _animator.SetBool("Guard", true); } 
+   void NoGuard()   { _animator.SetBool("Guard", false); }
+   public override void HideColliderWeapon(){ base.HideColliderWeapon(); }
+   protected override void ShowColliderWeapon(){ base.ShowColliderWeapon(); }
+    /// <summary>インターフェースのダメージ関数 </summary>
     /// <param name="damage"></param>
-    public  void Damage(int damage)
+    public void AddDamage(float damage)
     {
-        if(isDie)
+        if (_isDie)
         {
             return;
         }
-        _playerHp -= damage;
-        playerUiCanvas.UpdateHp(_playerHp);
-        if (_playerHp <= 0)
+        _hp -= damage;
+        playerUiCanvas.UpdateHp(_hp);
+        if (_hp <= 0)
         {
-            _playerHp = 0;
-            animator.SetTrigger("Die");
-            isDie = true;
+            _hp = 0;
+            _animator.SetTrigger("Die");
+            _isDie = true;
             //死んだあと動かないように
             HideColliderWeapon();
-            rb.velocity = Vector3.zero;
+        }
+        else
+        {
+            _animator.SetTrigger("Hurt");
         }
     }
-    /*/// <summary>Hpを減らす関数 </summary>
-    /// <param name="damage"></param>
-    public void TakeHit(float damage)
-    {
-        playerHp = (int)Mathf.Clamp(playerHp - damage, 0, playerMaxHp);
-
-        playerUiCanvas.hpSlider.value = playerHp;
-
-        if (playerHp <= 0 && !GameState.gameOver)
-        {
-            GameState.gameOver = true;
-        }
-    }*/
 }
