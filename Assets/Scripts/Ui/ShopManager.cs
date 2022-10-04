@@ -8,10 +8,10 @@ public class ShopManager : MonoBehaviour
     [SerializeField] GameObject _playerSword = default;
     [SerializeField] Damager damager;
     [SerializeField] Guard guard;
-    Vector3 swordScale;
+    private Vector3 swordScale;
     [SerializeField] private ShopUpgrade[] upgrades;
     [SerializeField, Header("所持金を表示させるテキスト")] private Text haveMoneyText;
-
+    PlayerUiCanvas playerUiCanvas;
     /// <summary>ショップ内容</summary>
     [SerializeField] private Transform shopContent;
     /// <summary>ショップアイテムプレファブ</summary>
@@ -31,6 +31,7 @@ public class ShopManager : MonoBehaviour
         }
         //シーンをまたいでも値が保持される
         DontDestroyOnLoad(gameObject);
+        playerUiCanvas = GameObject.FindObjectOfType<PlayerUiCanvas>();
     }
     private void Start()
     {
@@ -68,9 +69,12 @@ public class ShopManager : MonoBehaviour
         {
             GameManager.Instance.Money-=upgrade.cost;
             upgrade.shopLevel++;
+            upgrade.cost += Mathf.FloorToInt(upgrade.cost * 2.5f);
             //子オブジェクトを参照してショップのレベルを更新
             upgrade.itemRef.transform.GetChild(0).GetComponent<Text>().
             text = "Lv."+upgrade.shopLevel.ToString();
+            upgrade.itemRef.transform.GetChild(1).GetComponent<Text>().
+            text = upgrade.cost.ToString() + "ゴールド";
 
             ApplyUpgrade(upgrade);
         }
@@ -81,11 +85,15 @@ public class ShopManager : MonoBehaviour
         switch(upgrade.name)
         {
             case "射程増加":
-                
+                swordScale *= 0.15f;
                 break;
             case "攻撃力増加":
+                damager.AttackDamage += 3.2f;
                 break;
             case "体力増加":
+                playerController.MaxHp += 5;
+                playerUiCanvas.hpSlider.maxValue = playerController.MaxHp;
+                playerUiCanvas.UpdateHp(playerController.Hp);
                 break;
             case "防御力増加":
                 break;
@@ -104,7 +112,7 @@ public class ShopUpgrade
     public int cost;
     public Sprite ShopBackGround;
     /// <summary>ショップのレベル</summary>
-    [HideInInspector] public int shopLevel = 0;
+    [HideInInspector] public int shopLevel = 1;
     /// <summary>アイテム参照</summary>
     [HideInInspector] public GameObject itemRef;
 }
