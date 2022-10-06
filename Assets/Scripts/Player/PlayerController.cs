@@ -13,7 +13,7 @@ public class PlayerController :HumanManager,IDamageInterFace
     /// <summary>回転</summary>
     Quaternion targetRot;
     /// <summary>経過時間</summary>
-    float currentTime = 0;
+    private float  currentTime = 0;
     private bool heal_flag = false;
     [SerializeField,Header("回復オブジェクト")] GameObject healObj;
     [SerializeField, Header("ザコ敵")] GameObject zakotekiCollider;
@@ -24,15 +24,12 @@ public class PlayerController :HumanManager,IDamageInterFace
     /// <summary>スタミナ</summary>
     [SerializeField,Header("スタミナ")] protected float _stamina = 100;
     /// <summary>プレイヤーのスピード</summary>
-    [SerializeField,Header("プレーヤーのスピード")] private float _playerSpeed = 5;
-    /// <summary>所持金 </summary>
-    [SerializeField,Header("所持金")] private int money = 0;
+    [SerializeField,Header("プレーヤーのスピード")] private float _playerSpeed = 5;  
     /// <summary>アニメーションのブレンドツリーで切り替える際のスピード</summary>
-    int speed;
+    private int speed;
     public int Speed => speed;
-    PauseManager _pauseManager;
-    Inventry inventry;
-    bool _isStop;
+    private PauseManager _pauseManager;
+    private bool _isStop;
     public float Stamina => _stamina;
 
     public float MaxStamina => _maxStamina;
@@ -40,11 +37,6 @@ public class PlayerController :HumanManager,IDamageInterFace
     {
         get { return _playerSpeed; }
         set { _playerSpeed = value; }
-    }
-    public int Money
-    {
-        get { return money; }
-        set { money = value; }
     }
     private void Awake()
     {
@@ -182,17 +174,17 @@ public class PlayerController :HumanManager,IDamageInterFace
         if (speed == 2)
         {
             _stamina-=0.5f;
-            _playerSpeed = 4;            
+            PlayerSettingSpeed(4);
             if(_stamina<=20)
             {
                 speed = 1;
-                _playerSpeed = 2;
+                PlayerSettingSpeed(2);
             }
             playerUiCanvas.UpdateStamina(_stamina);
         }
         else if(speed == 1)
         {
-            _playerSpeed = 2;
+            PlayerSettingSpeed(2);
             IncreseStamina(1);
         }
         else if(speed <= 0)
@@ -252,6 +244,20 @@ public class PlayerController :HumanManager,IDamageInterFace
             HideColliderWeapon();
         }
         else
+        {
+            _animator.SetTrigger("Hurt");
+        }
+    }
+    /// <summary>プレイヤーのスピード設定</summary>
+    /// <param name="speed"></param>
+   private void PlayerSettingSpeed(float speed)
+   {
+        _playerSpeed = speed;
+   }
+    private void OnTriggerEnter(Collider other)
+    {
+        var damager = other.GetComponent<Damager>();
+        if (damager != null)
         {
             _animator.SetTrigger("Hurt");
         }
