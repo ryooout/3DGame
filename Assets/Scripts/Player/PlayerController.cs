@@ -33,11 +33,7 @@ public class PlayerController :HumanManager,IDamageInterFace
     public float Stamina => _stamina;
 
     public float MaxStamina => _maxStamina;
-    public float PlayerSpeed
-    {
-        get { return _playerSpeed; }
-        set { _playerSpeed = value; }
-    }
+    public float PlayerSpeed { get => _playerSpeed; set => _playerSpeed = value; }
     private void Awake()
     {
         targetRot = transform.rotation;
