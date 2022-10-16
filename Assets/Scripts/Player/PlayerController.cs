@@ -24,7 +24,8 @@ public class PlayerController :HumanManager,IDamageInterFace
     /// <summary>スタミナ</summary>
     [SerializeField,Header("スタミナ")] protected float _stamina = 100;
     /// <summary>プレイヤーのスピード</summary>
-    [SerializeField,Header("プレーヤーのスピード")] private float _playerSpeed = 5;  
+    [SerializeField,Header("プレーヤーのスピード")] private float _playerSpeed = 5;
+    [SerializeField, Header("ガードのコライダー")] Collider _guardCollider;
     /// <summary>アニメーションのブレンドツリーで切り替える際のスピード</summary>
     private int speed;
     public int Speed => speed;
@@ -126,12 +127,12 @@ public class PlayerController :HumanManager,IDamageInterFace
         if (Input.GetMouseButton(1) && !_isStop)
         {
             GuardNow();
-            Debug.Log("Down");
+           // Debug.Log("Down");
         }
         else if (Input.GetMouseButtonUp(1) && !_isStop)
         {
             NoGuard();
-            Debug.Log("Up");
+           // Debug.Log("Up");
         }
     }
     private void FixedUpdate()
@@ -155,7 +156,7 @@ public class PlayerController :HumanManager,IDamageInterFace
     }
     private void Move()
     {
-        if (_animator.GetCurrentAnimatorStateInfo(0).IsName("Attack"))
+        if (_animator.GetCurrentAnimatorStateInfo(0).IsTag("Attack"))
         {
             return;
         }
@@ -163,24 +164,23 @@ public class PlayerController :HumanManager,IDamageInterFace
         float z = Input.GetAxis("Vertical");
         //カメラの正面方向に移動するための変数。
         var horizontalRotation = Quaternion.AngleAxis(Camera.main.transform.eulerAngles.y, Vector3.up);
-        vel = horizontalRotation * new Vector3(x, 0, z);
-        vel.Normalize();
-        rb.velocity = vel*_playerSpeed;      
+        vel = horizontalRotation * new Vector3(x, 0, z).normalized;
+        rb.velocity = vel* _playerSpeed;      
         speed = Input.GetKey(KeyCode.LeftShift) ? 2 : 1;
         if (speed == 2)
         {
             _stamina-=0.5f;
-            PlayerSettingSpeed(4);
+            PlayerSettingSpeed(5);
             if(_stamina<=20)
             {
                 speed = 1;
-                PlayerSettingSpeed(2);
+                PlayerSettingSpeed(3);
             }
             playerUiCanvas.UpdateStamina(_stamina);
         }
         else if(speed == 1)
         {
-            PlayerSettingSpeed(2);
+            PlayerSettingSpeed(3);
             IncreseStamina(1);
         }
         else if(speed <= 0)
@@ -192,7 +192,8 @@ public class PlayerController :HumanManager,IDamageInterFace
         if (vel.magnitude > 0.5f)
         {
             targetRot = Quaternion.LookRotation(vel, Vector3.up);
-        }                                //回転をなめらかに
+        }                                
+        //回転をなめらかに
         transform.rotation = Quaternion.RotateTowards(transform.rotation, targetRot, rotationSpeed);
         _animator.SetFloat("Speed", vel.magnitude * speed, 0.1f, Time.deltaTime);
     }
@@ -213,12 +214,22 @@ public class PlayerController :HumanManager,IDamageInterFace
             return;
         }
         _animator.SetTrigger("Attack");
-        _playerSpeed = 0;
+        PlayerSettingSpeed(0);
     }
     /// <summary>あるアニメーションのタイミングでSE再生</summary>
    public void SEplay() {audioManager.PlaySound(0);}
-   void GuardNow()  { _animator.SetBool("Guard", true); } 
-   void NoGuard()   { _animator.SetBool("Guard", false); }
+    /// <summary>ガード中</summary>
+   void GuardNow()
+   {
+        _animator.SetBool("Guard", true);
+        ShowGuardCollider();
+   } 
+    /// <summary>ガード解除</summary>
+   void NoGuard()
+   { 
+        _animator.SetBool("Guard", false);
+        HideGuardCollider();
+   }
    public override void HideColliderWeapon(){ base.HideColliderWeapon(); }
    protected override void ShowColliderWeapon(){ base.ShowColliderWeapon(); }
     /// <summary>インターフェースのダメージ関数 </summary>
@@ -246,10 +257,21 @@ public class PlayerController :HumanManager,IDamageInterFace
     }
     /// <summary>プレイヤーのスピード設定</summary>
     /// <param name="speed"></param>
-   private void PlayerSettingSpeed(float speed)
+   public void PlayerSettingSpeed(float speed)
    {
         _playerSpeed = speed;
    }
+    /// <summary>ガード解除時にコライダーを出す</summary>
+    public void ShowGuardCollider()
+    {
+        _guardCollider.enabled = true;
+    }
+    /// <summary>ガード時にコライダーを隠す</summary>
+    public  void HideGuardCollider()
+    {
+        _guardCollider.enabled = false;
+    }
+    
     private void OnTriggerEnter(Collider other)
     {
         var damager = other.GetComponent<Damager>();
