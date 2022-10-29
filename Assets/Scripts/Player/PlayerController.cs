@@ -217,7 +217,7 @@ public class PlayerController :HumanManager,IDamageInterFace
         PlayerSettingSpeed(0);
     }
     /// <summary>あるアニメーションのタイミングでSE再生</summary>
-   public void SEplay() {audioManager.PlaySound(0);}
+   public void SEplay()=>audioManager.PlaySound(0);
     /// <summary>ガード中</summary>
    void GuardNow()
    {
@@ -230,8 +230,8 @@ public class PlayerController :HumanManager,IDamageInterFace
         _animator.SetBool("Guard", false);
         HideGuardCollider();
    }
-   public override void HideColliderWeapon(){ base.HideColliderWeapon(); }
-   protected override void ShowColliderWeapon(){ base.ShowColliderWeapon(); }
+   public override void HideColliderWeapon() =>base.HideColliderWeapon();
+   protected override void ShowColliderWeapon()=> base.ShowColliderWeapon(); 
     /// <summary>インターフェースのダメージ関数 </summary>
     /// <param name="damage"></param>
     public void AddDamage(float damage)
@@ -256,21 +256,11 @@ public class PlayerController :HumanManager,IDamageInterFace
         }
     }
     /// <summary>プレイヤーのスピード設定</summary>
-    /// <param name="speed"></param>
-   public void PlayerSettingSpeed(float speed)
-   {
-        _playerSpeed = speed;
-   }
+   public void PlayerSettingSpeed(float speed)=>_playerSpeed = speed;
     /// <summary>ガード解除時にコライダーを出す</summary>
-    public void ShowGuardCollider()
-    {
-        _guardCollider.enabled = true;
-    }
+    public void ShowGuardCollider()=>_guardCollider.enabled = true;
     /// <summary>ガード時にコライダーを隠す</summary>
-    public  void HideGuardCollider()
-    {
-        _guardCollider.enabled = false;
-    }
+    public  void HideGuardCollider()=>_guardCollider.enabled = false;
     
     private void OnTriggerEnter(Collider other)
     {
